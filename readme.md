@@ -1,7 +1,7 @@
 Creamos una carpeta llamada **DNS** con 2 subcarpetas en su interior: **config** y **zonas**.
 
 Creamos el fichero **docker-compose.yml** en DNS:
-
+~~~
 version: "3.9"  # optional since v1.27.0
 
 services:
@@ -14,13 +14,13 @@ services:
     volumes:
       - /home/asir2a/Escritorio/SRI/DNS/config:/etc/bind
       - /home/asir2a/Escritorio/SRI/DNS/zonas:/var/lib/bind
-
+~~~
 
 Usamos el comando: *docker-compose up*.
 
 
 Creamos un fichero llamado **named.config** dentro de la carpeta config:
-
+~~~
 options {
         directory "/var/cache/bind";
         listen-on { 127.0.0.1; };
@@ -40,13 +40,13 @@ zone "asircastelaonerea.com." {
         file "/var/lib/bind/db.asircastelaonerea.com";
         notify explicit;
 };
-
+~~~
  
 Usamos el comando: *docker-compose start*. El contenedor se quedará arrancado.
  
 
 Creamos un fichero llamado **db.asircastelaonerea.com** dentro de la carpeta zonas:
-
+~~~
 $TTL    3600
 @       IN      SOA     ns.asircastelaonerea.com. nerea.danielcastelao.org. (
                    2007010401           ; Serial
@@ -63,38 +63,38 @@ etch    IN      A       123.123.4.5
 pop     IN      CNAME   ns
 www     IN      CNAME   etch
 mail    IN      CNAME   etch
-
+~~~
 
 Usamos el comando: *docker-compose start*. En los logs debería haberse cargado la zona correctamente.
 
  
 
 Modificamos el fichero docker-compose.yml y añadiremos lo siguiente a la altura de volumes:
-
+~~~
 networks:
    bind9_subnet:
       ipv4_address: 10.1.0.254
-
+~~~
       
 
 y a la altura de services:
-
+~~~
 networks:
   bind9_subnet:
     external: true
-
+~~~
 Eliminamos el contenedor con el comando: *docker-compose down -v* y lo volvemos a arrancar con: *docker-compose up*.
 
 Entramos en el fichero named.conf y modificamos su contenido por el siguiente:
-
+~~~
 include "/etc/bind/named.conf.options"
 include "/etc/bind/named.conf.local"
-
+~~~
 
 En la carpeta conf creamos 2 ficheros llamados **named.conf.options** y **named.conf.local**.
 
 En el fichero named.conf.options incluiremos lo siguiente:
-
+~~~
 options {
     directory "/var/cache/bind";
     forwarders {
@@ -108,9 +108,9 @@ options {
         any;
     };
 };
-
+~~~
 En el fichero named.conf.local incluiremos lo siguiente:
-
+~~~
 zone "asircastelaonerea.com." {
         type master;
         file "/var/lib/bind/db.asircastelaonerea.com";
@@ -118,7 +118,7 @@ zone "asircastelaonerea.com." {
             any;
         };
 };
-
+~~~
 
 Usamos el comando: *docker-compose start* y el contenedor debería quedarse encendido.
 
@@ -129,13 +129,13 @@ En la linea de ns modificar por: ns IN A 10.1.0.254 (la IP que pusimos en networ
  
 
 Además añadiremos:
-
+~~~
 test    IN      A       10.1.0.2
 alias   IN      CNAME   test
-
+~~~
  
 Modificaremos el docker-compose.yml y añadiremos lo siguiente a la altura de bind9:
-
+~~~
 asir_cliente:
       container_name: asir_cliente
       image: alpine
@@ -145,7 +145,7 @@ asir_cliente:
       tty: true
       dns:
         - 10.1.0.254
-
+~~~
  
 
 Usamos *docker-compose down -v* y *docker-compose up* de modo que se crea el contenedor alpine y se quedará levantado.
